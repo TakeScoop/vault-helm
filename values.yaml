@@ -98,6 +98,10 @@ server:
     # Target port to which the service should be mapped to
     targetPort: 8200
 
+  # Configuration for an ingress to the Vault service
+  ingress:
+    annotations: {}
+
   # This configures the Vault Statefulset to create a PVC for data
   # storage when using the file backend.
   # See https://www.vaultproject.io/docs/audit/index.html to know more

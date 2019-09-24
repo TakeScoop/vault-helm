@@ -270,6 +270,16 @@ Sets extra service account annotations
 {{- end -}}
 
 {{/*
+Sets extra ingress annotations
+*/}}
+{{- define "vault.ingress.annotations" -}}
+  {{- if and (ne .mode "dev") .Values.server.ingress.annotations }}
+  annotations:
+    {{- toYaml .Values.server.ingress.annotations | nindent 4 }}
+  {{- end }}
+{{- end -}}
+
+{{/*
 Set's the container resources if the user has set any.
 */}}
 {{- define "vault.resources" -}}

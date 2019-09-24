@@ -16,6 +16,9 @@ metadata:
     # https://github.com/kubernetes/kubernetes/issues/58662
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
 spec:
+  {{- if .Values.server.service.type }}
+  type: {{ .Values.server.service.type }}
+  {{- end }}
   {{- if .Values.server.service.clusterIP }}
   clusterIP: {{ .Values.server.service.clusterIP }}
   {{- end }}

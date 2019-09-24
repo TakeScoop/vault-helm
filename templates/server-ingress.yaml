@@ -1,0 +1,13 @@
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: {{ template "vault.fullname" . }}
+  {{ template "vault.ingress.annotations" . }}
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ template "vault.fullname" . }}
+              servicePort: {{ .Values.server.service.port }}
