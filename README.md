@@ -13,8 +13,6 @@ use Vault with Kubernetes, please see the
 ## Why the fork?
 
 The vault-helm repository is fairly new. When started integrating it into our clusters, there were three distinct pieces that were missing:
-- Ingress definition ([merged](https://github.com/hashicorp/vault-helm/commit/9dd6bad74123673a16e35f167f1e1088f9b5050d))
-    - While tunnelbox still lives in convox, it can't use k8s dns. Instead we'll have to use an ingress until we migrate tunnelbox.
 - Service type configuration (NodePort) ([pr submitted](https://github.com/hashicorp/vault-helm/pull/65))
     - Our ingress controllers depend on services being of type NodePort and is currently not configurable
 - Published to a repository
