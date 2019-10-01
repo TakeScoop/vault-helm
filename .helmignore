@@ -2,3 +2,21 @@
 .terraform/
 bin/
 test/
+
+### Scoop additions ###
+
+.DS_Store
+.circleci/
+
+# Common backup files
+*.swp
+*.bak
+*.tmp
+*~
+*.md
+
+# Various IDEs
+.project
+.idea/
+*.tmproj
+.vscode/
