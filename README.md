@@ -10,6 +10,18 @@ For full documentation on this Helm chart along with all the ways you can
 use Vault with Kubernetes, please see the
 [Vault and Kubernetes documentation](https://www.vaultproject.io/docs/platform/k8s/index.html).
 
+## Why the fork?
+
+The vault-helm repository is fairly new. When started integrating it into our clusters, there were three distinct pieces that were missing:
+- Ingress definition ([merged](https://github.com/hashicorp/vault-helm/commit/9dd6bad74123673a16e35f167f1e1088f9b5050d))
+    - While tunnelbox still lives in convox, it can't use k8s dns. Instead we'll have to use an ingress until we migrate tunnelbox.
+- Service type configuration (NodePort) ([pr submitted](https://github.com/hashicorp/vault-helm/pull/65))
+    - Our ingress controllers depend on services being of type NodePort and is currently not configurable
+- Published to a repository
+    - While we could download a tagged release as [noted in the docs](https://github.com/hashicorp/vault-helm/tree/d696408fae1524979c82e9b9ae98a63d4f00fad7#usage), this is a bit too messy for us to include in our cluster base installation.
+
+When these three things are completed, we can celebrate and move off of the fork, onto the upstream chart.
+
 ## Prerequisites
 
 To use the charts here, [Helm](https://helm.sh/) must be installed in your
