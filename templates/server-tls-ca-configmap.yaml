@@ -1,0 +1,10 @@
+{{ if .Values.scoop.caCert }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "vault.fullname" . }}-tls-ca
+  namespace: {{ .Release.Namespace }}
+data:
+  ca-cert.pem: |-
+{{ .Values.scoop.caCert | b64dec | indent 4 }}
+{{ end }}

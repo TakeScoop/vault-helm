@@ -257,3 +257,5 @@ ui:
   # This should be a multi-line string mapping directly to the a map of
   # the annotations to apply to the ui service
   annotations: {}
+
+scoop: {}
