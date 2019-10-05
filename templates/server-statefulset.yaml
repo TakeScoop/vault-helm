@@ -40,6 +40,12 @@ spec:
       securityContext:
         fsGroup: {{ template "vault.fsgroup" . }}
       volumes:
+        - name: vault-tls-ca
+          configMap:
+            name: vault-tls-ca
+        - name: vault-tls-server
+          secret:
+            secretName: vault-tls-server
         {{ template "vault.volumes" . }}
       containers:
         - name: vault
@@ -67,6 +73,8 @@ spec:
               value: "{{ include "vault.scheme" . }}://$(POD_IP):8200"
             - name: SKIP_CHOWN
               value: "true"
+            - name: VAULT_CAPATH
+              value: "/etc/pki/ca/ca-cert.pem"
             {{- if eq (.Values.server.mlock.enabled | toString) "false" }}
             - name: SKIP_SETCAP
               value: "true"
@@ -75,6 +83,11 @@ spec:
             {{- include "vault.extraEnvironmentVars" .Values.server | nindent 12 }}
             {{- include "vault.extraSecretEnvironmentVars" .Values.server | nindent 12 }}
           volumeMounts:
+            - name: vault-tls-ca
+              mountPath: /etc/pki/ca/
+            - name: vault-tls-server
+              readOnly: true
+              mountPath: /etc/pki/server/
           {{ template "vault.mounts" . }}
           ports:
             - containerPort: 8200

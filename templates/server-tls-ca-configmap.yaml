@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.scoop.caConfigMapName }}
+  name: vault-tls-ca
   namespace: {{ .Release.Namespace }}
 data:
   ca-cert.pem: |-
