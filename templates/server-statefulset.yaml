@@ -40,12 +40,14 @@ spec:
       securityContext:
         fsGroup: {{ template "vault.fsgroup" . }}
       volumes:
+        {{- if eq (.Values.scoop.enabled | toString) "true" }}
         - name: vault-tls-ca
           configMap:
             name: vault-tls-ca
         - name: vault-tls-server
           secret:
             secretName: vault-tls-server
+        {{- end}}
         {{ template "vault.volumes" . }}
       containers:
         - name: vault
@@ -73,8 +75,10 @@ spec:
               value: "{{ include "vault.scheme" . }}://$(POD_IP):8200"
             - name: SKIP_CHOWN
               value: "true"
+            {{- if eq (.Values.scoop.enabled | toString) "true" }}
             - name: VAULT_CAPATH
               value: "/etc/pki/ca/ca-cert.pem"
+            {{- end }}
             {{- if eq (.Values.server.mlock.enabled | toString) "false" }}
             - name: SKIP_SETCAP
               value: "true"
