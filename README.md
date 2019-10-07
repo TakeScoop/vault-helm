@@ -13,8 +13,6 @@ use Vault with Kubernetes, please see the
 ## Why the fork?
 
 The vault-helm repository is fairly new. When started integrating it into our clusters, there were three distinct pieces that were missing:
-- Service type configuration (NodePort) ([pr submitted](https://github.com/hashicorp/vault-helm/pull/65))
-    - Our ingress controllers depend on services being of type NodePort and is currently not configurable
 - Published to a repository
     - While we could download a tagged release as [noted in the docs](https://github.com/hashicorp/vault-helm/tree/d696408fae1524979c82e9b9ae98a63d4f00fad7#usage), this is a bit too messy for us to include in our cluster base installation.
 
