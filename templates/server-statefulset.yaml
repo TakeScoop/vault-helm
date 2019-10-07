@@ -41,10 +41,10 @@ spec:
         fsGroup: {{ template "vault.fsgroup" . }}
       volumes:
         {{- if eq (.Values.scoop.enabled | toString) "true" }}
-        - name: {{ template "vault.fullname" . }}-tls-ca
+        - name: vault-tls-ca
           configMap:
             name: {{ template "vault.fullname" . }}-tls-ca
-        - name: {{ template "vault.fullname" . }}-tls-server
+        - name: vault-tls-server
           secret:
             secretName: {{ template "vault.fullname" . }}-tls-server
         {{- end}}
@@ -87,9 +87,9 @@ spec:
             {{- include "vault.extraEnvironmentVars" .Values.server | nindent 12 }}
             {{- include "vault.extraSecretEnvironmentVars" .Values.server | nindent 12 }}
           volumeMounts:
-            - name: {{ template "vault.fullname" . }}-tls-ca
+            - name: vault-tls-ca
               mountPath: /etc/pki/ca/
-            - name: {{ template "vault.fullname" . }}-tls-server
+            - name: vault-tls-server
               readOnly: true
               mountPath: /etc/pki/server/
           {{ template "vault.mounts" . }}
