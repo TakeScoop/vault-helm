@@ -25,7 +25,7 @@ jobs:
           name: Upload vault-helm to helm repo
           command: |
             ./linux-386/helm package .
-            ./jfrog rt upload *.tgz / --url https://takescoop.jfrog.io/takescoop/helm-local --user $DOCKER_REGISTRY_USERNAME --apikey $DOCKER_REGISTRY_PASSWORD
+            ./jfrog rt upload *.tgz helm-local/ --url https://takescoop.jfrog.io/takescoop/ --user $DOCKER_REGISTRY_USERNAME --apikey $DOCKER_REGISTRY_PASSWORD
           environment:
             JFROG_CLI_OFFER_CONFIG: false
 workflows:
