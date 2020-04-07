@@ -1,6 +1,6 @@
 # Vault Helm Chart [![CircleCI](https://circleci.com/gh/TakeScoop/vault-helm/tree/master.svg?style=svg)](https://circleci.com/gh/TakeScoop/vault-helm/tree/master)
 
-**Maintainer:** [@ryanwholey](github.com/ryanwholey)
+**Maintainer:** Platform Team (Slack: [#dev-platform](https://takescoop.slack.com/app_redirect?channel=dev-platform))
 
 This repository contains the official HashiCorp Helm chart for installing
 and configuring Vault on Kubernetes. This chart supports multiple use
