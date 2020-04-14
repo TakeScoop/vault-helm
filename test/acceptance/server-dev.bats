@@ -4,7 +4,11 @@ load _helpers
 
 @test "server/dev: testing deployment" {
   cd `chart_dir`
-  helm install --name="$(name_prefix)" --set='server.dev.enabled=true' .
+  kubectl delete namespace acceptance --ignore-not-found=true
+  kubectl create namespace acceptance
+  kubectl config set-context --current --namespace=acceptance
+
+  helm install "$(name_prefix)" --set='server.dev.enabled=true' .
   wait_for_running $(name_prefix)-0
 
   # Replicas
@@ -50,7 +54,11 @@ load _helpers
 
 # Clean up
 teardown() {
-  echo "helm/pvc teardown"
-  helm delete --purge vault
-  kubectl delete --all pvc
+  if [[ ${CLEANUP:-true} == "true" ]]
+  then
+      echo "helm/pvc teardown"
+      helm delete vault
+      kubectl delete --all pvc
+      kubectl delete namespace acceptance --ignore-not-found=true
+  fi
 }

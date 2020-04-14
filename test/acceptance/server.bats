@@ -4,7 +4,12 @@ load _helpers
 
 @test "server/standalone: testing deployment" {
   cd `chart_dir`
-  helm install --name="$(name_prefix)" .
+
+  kubectl delete namespace acceptance --ignore-not-found=true
+  kubectl create namespace acceptance
+  kubectl config set-context --current --namespace=acceptance
+
+  helm install "$(name_prefix)" .
   wait_for_running $(name_prefix)-0
 
   # Sealed, not initialized
@@ -15,11 +20,6 @@ load _helpers
   local init_status=$(kubectl exec "$(name_prefix)-0" -- vault status -format=json |
     jq -r '.initialized')
   [ "${init_status}" == "false" ]
-
-  # Security
-  local ipc=$(kubectl get statefulset "$(name_prefix)" --output json |
-    jq -r '.spec.template.spec.containers[0].securityContext.capabilities.add[0]')
-  [ "${ipc}" == "IPC_LOCK" ]
 
   # Replicas
   local replicas=$(kubectl get statefulset "$(name_prefix)" --output json |
@@ -86,7 +86,7 @@ load _helpers
   [ "${token}" != "" ]
 
   # Vault Unseal
-  local pods=($(kubectl get pods -o json | jq -r '.items[].metadata.name'))
+  local pods=($(kubectl get pods --selector='app.kubernetes.io/name=vault' -o json | jq -r '.items[].metadata.name'))
   for pod in "${pods[@]}"
   do
       kubectl exec -ti ${pod} -- vault operator unseal ${token}
@@ -94,7 +94,7 @@ load _helpers
 
   wait_for_ready "$(name_prefix)-0"
 
-  # Sealed, not initialized
+  # Unsealed, initialized
   local sealed_status=$(kubectl exec "$(name_prefix)-0" -- vault status -format=json |
     jq -r '.sealed' )
   [ "${sealed_status}" == "false" ]
@@ -106,7 +106,11 @@ load _helpers
 
 # Clean up
 teardown() {
-  echo "helm/pvc teardown"
-  helm delete --purge vault
-  kubectl delete --all pvc
+  if [[ ${CLEANUP:-true} == "true" ]]
+  then
+      echo "helm/pvc teardown"
+      helm delete vault
+      kubectl delete --all pvc
+      kubectl delete namespace acceptance --ignore-not-found=true
+  fi
 }

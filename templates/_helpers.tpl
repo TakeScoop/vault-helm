@@ -42,7 +42,7 @@ Add a special case for replicas=1, where it should default to 0 as well.
 {{- else if .Values.server.ha.disruptionBudget.maxUnavailable -}}
 {{ .Values.server.ha.disruptionBudget.maxUnavailable -}}
 {{- else -}}
-{{- ceil (sub (div (int .Values.server.ha.replicas) 2) 1) -}}
+{{- div (sub (div (mul (int .Values.server.ha.replicas) 10) 2) 1) 10 -}}
 {{- end -}}
 {{- end -}}
 
@@ -51,7 +51,9 @@ Set the variable 'mode' to the server mode requested by the user to simplify
 template logic.
 */}}
 {{- define "vault.mode" -}}
-  {{- if eq (.Values.server.dev.enabled | toString) "true" -}}
+  {{- if .Values.injector.externalVaultAddr -}}
+    {{- $_ := set . "mode" "external" -}}
+  {{- else if eq (.Values.server.dev.enabled | toString) "true" -}}
     {{- $_ := set . "mode" "dev" -}}
   {{- else if eq (.Values.server.ha.enabled | toString) "true" -}}
     {{- $_ := set . "mode" "ha" -}}
@@ -72,17 +74,6 @@ Set's the replica count based on the different modes configured by user
     {{- .Values.server.ha.replicas | default 3 -}}
   {{ else }}
     {{- default 1 -}}
-  {{ end }}
-{{- end -}}
-
-{{/*
-Set's fsGroup based on different modes.  Standalone is the only mode
-that requires fsGroup at this time because it uses PVC for the file
-storage backend.
-*/}}
-{{- define "vault.fsgroup" -}}
-  {{ if eq .mode "standalone" }}
-    {{- .Values.server.storageFsGroup | default 1000 -}}
   {{ end }}
 {{- end -}}
 
@@ -130,8 +121,7 @@ for users looking to use this chart with Consul Helm.
           - |
             sed -E "s/HOST_IP/${HOST_IP?}/g" /vault/config/extraconfig-from-values.hcl > /tmp/storageconfig.hcl;
             sed -Ei "s/POD_IP/${POD_IP?}/g" /tmp/storageconfig.hcl;
-            chown vault:vault /tmp/storageconfig.hcl;
-            /usr/local/bin/docker-entrypoint.sh vault server -config=/tmp/storageconfig.hcl
+            /usr/local/bin/docker-entrypoint.sh vault server -config=/tmp/storageconfig.hcl {{ .Values.server.extraArgs }}
   {{ end }}
 {{- end -}}
 
@@ -150,11 +140,11 @@ Set's which additional volumes should be mounted to the container
 based on the mode configured.
 */}}
 {{- define "vault.mounts" -}}
-  {{ if eq .mode "standalone" }}
-    {{ if eq (.Values.server.auditStorage.enabled | toString) "true" }}
+  {{ if eq (.Values.server.auditStorage.enabled | toString) "true" }}
             - name: audit
               mountPath: /vault/audit
-    {{ end }}
+  {{ end }}
+  {{ if or (eq .mode "standalone") (and (eq .mode "ha") (eq (.Values.server.ha.raft.enabled | toString) "true"))  }}
     {{ if eq (.Values.server.dataStorage.enabled | toString) "true" }}
             - name: data
               mountPath: /vault/data
@@ -179,7 +169,7 @@ storage might be desired by the user.
 {{- define "vault.volumeclaims" -}}
   {{- if and (ne .mode "dev") (or .Values.server.dataStorage.enabled .Values.server.auditStorage.enabled) }}
   volumeClaimTemplates:
-      {{- if and (eq (.Values.server.dataStorage.enabled | toString) "true") (eq .mode "standalone") }}
+      {{- if and (eq (.Values.server.dataStorage.enabled | toString) "true") (or (eq .mode "standalone") (eq (.Values.server.ha.raft.enabled | toString ) "true" )) }}
     - metadata:
         name: data
       spec:
@@ -219,12 +209,32 @@ Set's the affinity for pod placement when running in standalone and HA modes.
 {{- end -}}
 
 {{/*
+Sets the injector affinity for pod placement
+*/}}
+{{- define "injector.affinity" -}}
+  {{- if .Values.injector.affinity }}
+      affinity:
+        {{ tpl .Values.injector.affinity . | nindent 8 | trim }}
+  {{ end }}
+{{- end -}}
+
+{{/*
 Set's the toleration for pod placement when running in standalone and HA modes.
 */}}
 {{- define "vault.tolerations" -}}
   {{- if and (ne .mode "dev") .Values.server.tolerations }}
       tolerations:
         {{ tpl .Values.server.tolerations . | nindent 8 | trim }}
+  {{- end }}
+{{- end -}}
+
+{{/*
+Sets the injector toleration for pod placement
+*/}}
+{{- define "injector.tolerations" -}}
+  {{- if .Values.injector.tolerations }}
+      tolerations:
+        {{ tpl .Values.injector.tolerations . | nindent 8 | trim }}
   {{- end }}
 {{- end -}}
 
@@ -238,6 +248,15 @@ Set's the node selector for pod placement when running in standalone and HA mode
   {{- end }}
 {{- end -}}
 
+{{/*
+Sets the injector node selector for pod placement
+*/}}
+{{- define "injector.nodeselector" -}}
+  {{- if .Values.injector.nodeSelector }}
+      nodeSelector:
+        {{ tpl .Values.injector.nodeSelector . | indent 8 | trim }}
+  {{- end }}
+{{- end -}}
 
 {{/*
 Sets extra pod annotations
@@ -255,17 +274,27 @@ Sets extra ui service annotations
 {{- define "vault.ui.annotations" -}}
   {{- if .Values.ui.annotations }}
   annotations:
-    {{- toYaml .Values.ui.annotations | nindent 4 }}
+    {{- tpl .Values.ui.annotations . | nindent 4 }}
   {{- end }}
 {{- end -}}
 
 {{/*
 Sets extra service account annotations
 */}}
-{{- define "vault.serviceaccount.annotations" -}}
-  {{- if and (ne .mode "dev") .Values.server.serviceaccount.annotations }}
+{{- define "vault.serviceAccount.annotations" -}}
+  {{- if and (ne .mode "dev") .Values.server.serviceAccount.annotations }}
   annotations:
-    {{- toYaml .Values.server.serviceaccount.annotations | nindent 4 }}
+    {{- tpl .Values.server.serviceAccount.annotations . | nindent 4 }}
+  {{- end }}
+{{- end -}}
+
+{{/*
+Sets extra ingress annotations
+*/}}
+{{- define "vault.ingress.annotations" -}}
+  {{- if .Values.server.ingress.annotations }}
+  annotations:
+    {{- tpl .Values.server.ingress.annotations . | nindent 4 }}
   {{- end }}
 {{- end -}}
 
@@ -280,14 +309,24 @@ Set's the container resources if the user has set any.
 {{- end -}}
 
 {{/*
+Sets the container resources if the user has set any.
+*/}}
+{{- define "injector.resources" -}}
+  {{- if .Values.injector.resources -}}
+          resources:
+{{ toYaml .Values.injector.resources | indent 12}}
+  {{ end }}
+{{- end -}}
+
+{{/*
 Inject extra environment vars in the format key:value, if populated
 */}}
 {{- define "vault.extraEnvironmentVars" -}}
 {{- if .extraEnvironmentVars -}}
 {{- range $key, $value := .extraEnvironmentVars }}
-- name: {{ $key }}
+- name: {{ printf "%s" $key | replace "." "_" | upper | quote }}
   value: {{ $value | quote }}
-{{- end -}}
+{{- end }}
 {{- end -}}
 {{- end -}}
 
