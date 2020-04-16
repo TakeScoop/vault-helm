@@ -3,9 +3,6 @@ jobs:
   publish:
     docker:
       - image: centos:8
-        auth:
-          username: $DOCKER_REGISTRY_USERNAME
-          password: $DOCKER_REGISTRY_PASSWORD
     steps:
       - checkout
       - run:
