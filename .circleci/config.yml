@@ -9,12 +9,11 @@ jobs:
           name: Download and publish vault-helm chart
           command: |
             VAULT_HELM_VERSION=$(cat version)
-            mkdir vault-helm
-            curl -fsSL -o vault-helm/vault-helm-$VAULT_HELM_VERSION.tgz https://codeload.github.com/hashicorp/vault-helm/tar.gz/v$VAULT_HELM_VERSION     
+            curl -fsSL -o vault-helm-$VAULT_HELM_VERSION.tgz https://codeload.github.com/hashicorp/vault-helm/tar.gz/v$VAULT_HELM_VERSION     
       - persist_to_workspace:
           root: ~/
           paths: 
-            - vault-helm
+            - ./
   publish:
     docker:
       - image: centos:8
