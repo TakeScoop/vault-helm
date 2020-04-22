@@ -30,16 +30,8 @@ jobs:
           command: |
             VAULT_HELM_VERSION=$(cat version)
             jfrog rt upload vault-helm-$VAULT_HELM_VERSION.tgz helm-local/ --url https://takescoop.jfrog.io/takescoop/ --user $DOCKER_REGISTRY_USERNAME --apikey $DOCKER_REGISTRY_PASSWORD --dry-run
-      # - run:
-      #   name: Install jfrog
-      #   command: |
-      #     curl -fsSL -o /usr/local/bin/jfrog https://bintray.com/jfrog/jfrog-cli-go/download_file?file_path=1.33.2%2Fjfrog-cli-linux-386%2Fjfrog
-      #     chmod +x /usr/local/bin/jfrog
-      # - run:
-      #     name: publish chart
-      #     command: |
-      #       VAULT_HELM_VERSION=$(cat version)
-      #       jfrog rt upload vault-helm-$VAULT_HELM_VERSION.tgz helm-local/ --url https://takescoop.jfrog.io/takescoop/ --user $DOCKER_REGISTRY_USERNAME --apikey $DOCKER_REGISTRY_PASSWORD --dry-run
+          environment:
+            JFROG_CLI_OFFER_CONFIG: false
 workflows:
   version: 2
   download_publish:
