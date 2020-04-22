@@ -19,8 +19,8 @@ jobs:
     docker:
       - image: centos:8
     steps:
-        - attach_workspace:
-            at: ~/
+      - attach_workspace:
+          at: ~/
       - run:
           name: publish chart
           command: |
