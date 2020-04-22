@@ -5,11 +5,7 @@ jobs:
       - image: centos:8
     steps:
       - checkout
-      - run:
-          name: Install jfrog
-          command: |
-            curl -fsSL -o /usr/local/bin/jfrog https://bintray.com/jfrog/jfrog-cli-go/download_file?file_path=1.33.2%2Fjfrog-cli-linux-386%2Fjfrog
-            chmod +x /usr/local/bin/jfrog
+
       - run:
           name: Download and publish vault-helm chart
           command: |
@@ -17,13 +13,19 @@ jobs:
             mkdir vault-helm
             curl -fsSL -o vault-helm/vault-helm-$VAULT_HELM_VERSION.tgz https://codeload.github.com/hashicorp/vault-helm/tar.gz/v$VAULT_HELM_VERSION     
       - persist_to_workspace:
+          root: vault-helm
           paths:
-            - vault-helm
+            - ./
   publish:
     docker:
       - image: centos:8
     steps:
       - checkout
+      - run:
+        name: Install jfrog
+        command: |
+          curl -fsSL -o /usr/local/bin/jfrog https://bintray.com/jfrog/jfrog-cli-go/download_file?file_path=1.33.2%2Fjfrog-cli-linux-386%2Fjfrog
+          chmod +x /usr/local/bin/jfrog
       - run:
           name: publish chart
           command: |
