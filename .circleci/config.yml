@@ -25,6 +25,11 @@ jobs:
           command: |
             curl -fsSL -o /usr/local/bin/jfrog https://bintray.com/jfrog/jfrog-cli-go/download_file?file_path=1.33.2%2Fjfrog-cli-linux-386%2Fjfrog
             chmod +x /usr/local/bin/jfrog
+      - run:
+          name: Publish chart
+          command: |
+            VAULT_HELM_VERSION=$(cat version)
+            echo $VAULT_HELM_VERSION
       # - run:
       #   name: Install jfrog
       #   command: |
