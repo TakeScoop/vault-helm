@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  publish:
+  download:
     docker:
       - image: centos:8
     steps:
@@ -14,14 +14,41 @@ jobs:
           name: Download and publish vault-helm chart
           command: |
             VAULT_HELM_VERSION=$(cat version)
-            curl -fsSL -o vault-helm-$VAULT_HELM_VERSION.tgz https://codeload.github.com/hashicorp/vault-helm/tar.gz/v$VAULT_HELM_VERSION 
-            jfrog rt upload vault-helm-$VAULT_HELM_VERSION.tgz helm-local/ --url https://takescoop.jfrog.io/takescoop/ --user $DOCKER_REGISTRY_USERNAME --apikey $DOCKER_REGISTRY_PASSWORD
+            mkdir vault-helm
+            curl -fsSL -o vault-helm/vault-helm-$VAULT_HELM_VERSION.tgz https://codeload.github.com/hashicorp/vault-helm/tar.gz/v$VAULT_HELM_VERSION     
+      - persist_to_workspace:
+          paths:
+            - vault-helm
+  publish:
+    docker:
+      - image: centos:8
+    steps:
+      - checkout
+      - run:
+          name: publish chart
+          command: |
+            ls
+            ls vault-helm
 workflows:
   version: 2
-  build_and_test:
+  download_publish:
     jobs:
+      - download:
+          context: publish
       - publish:
           context: publish
-          filters:
-            branches:
-              only: master
+          requires: 
+            - download
+          # filters:
+          #   branches:
+          #     only: master
+
+
+      #       curl -fsSL -o /usr/local/bin/jfrog https://bintray.com/jfrog/jfrog-cli-go/download_file?file_path=1.33.2%2Fjfrog-cli-linux-386%2Fjfrog
+      #       chmod +x /usr/local/bin/jfrog
+      # - run:
+      #     name: Download and publish vault-helm chart
+      #     command: |
+      #       VAULT_HELM_VERSION=$(cat version)
+      #       curl -fsSL -o vault-helm-$VAULT_HELM_VERSION.tgz https://codeload.github.com/hashicorp/vault-helm/tar.gz/v$VAULT_HELM_VERSION 
+      #       jfrog rt upload vault-helm-$VAULT_HELM_VERSION.tgz helm-local/ --url https://takescoop.jfrog.io/takescoop/ --user $DOCKER_REGISTRY_USERNAME --apikey $DOCKER_REGISTRY_PASSWORD
