@@ -13,7 +13,9 @@ jobs:
             mkdir vault-helm
             curl -fsSL -o vault-helm/vault-helm-$VAULT_HELM_VERSION.tgz https://codeload.github.com/hashicorp/vault-helm/tar.gz/v$VAULT_HELM_VERSION     
       - persist_to_workspace:
-          root: vault-helm
+          root: ./vault-helm
+          paths: 
+            - ./
   publish:
     docker:
       - image: centos:8
