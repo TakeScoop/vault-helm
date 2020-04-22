@@ -14,17 +14,14 @@ jobs:
           name: Download and publish vault-helm chart
           command: |
             VAULT_HELM_VERSION=$(cat version)
-            echo $VAULT_HELM_VERSION
-            curl -fsSL https://github.com/hashicorp/vault-helm/archive/v$VAULT_HELM_VERSION.tar.gz -o ./vault-helm-$VAULT_HELM_VERSION.tgz
-            ls 
+            curl -fsSL -o vault-helm-$VAULT_HELM_VERSION.tgz https://codeload.github.com/hashicorp/vault-helm/tar.gz/v$VAULT_HELM_VERSION 
+            jfrog rt upload vault-helm-$VAULT_HELM_VERSION.tgz helm-local/ --url https://takescoop.jfrog.io/takescoop/ --user $DOCKER_REGISTRY_USERNAME --apikey $DOCKER_REGISTRY_PASSWORD
 workflows:
   version: 2
   build_and_test:
     jobs:
       - publish:
           context: publish
-          # filters:
-          #   branches:
-          #     only: master
-            # jfrog rt upload *.tgz helm-local/ --url https://takescoop.jfrog.io/takescoop/ --user $DOCKER_REGISTRY_USERNAME --apikey $DOCKER_REGISTRY_PASSWORD
-
+          filters:
+            branches:
+              only: master
