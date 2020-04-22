@@ -9,7 +9,7 @@ jobs:
           name: Download and publish vault-helm chart
           command: |
             VAULT_HELM_VERSION=$(cat version)
-            curl -fsSL -o vault-helm-$VAULT_HELM_VERSION.tgz https://codeload.github.com/hashicorp/vault-helm/tar.gz/v$VAULT_HELM_VERSION     
+            curl -fsSL -o vault-helm-$VAULT_HELM_VERSION.tgz https://codeload.github.com/hashicorp/vault-helm/tar.gz/v$VAULT_HELM_VERSION
       - persist_to_workspace:
           root: ~/
           paths: 
@@ -20,6 +20,11 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - run:
+          name: Download and publish vault-helm chart
+          command: |
+            VAULT_HELM_VERSION=$(cat version)
+            echo $VAULT_HELM_VERSION
       # - run:
       #   name: Install jfrog
       #   command: |
