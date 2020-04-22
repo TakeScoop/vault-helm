@@ -29,7 +29,7 @@ jobs:
           name: Publish chart
           command: |
             VAULT_HELM_VERSION=$(cat version)
-            jfrog rt upload vault-helm-$VAULT_HELM_VERSION.tgz helm-local/ --url https://takescoop.jfrog.io/takescoop/ --user $DOCKER_REGISTRY_USERNAME --apikey $DOCKER_REGISTRY_PASSWORD --dry-run
+            jfrog rt upload vault-helm-$VAULT_HELM_VERSION.tgz helm-local/ --url https://takescoop.jfrog.io/takescoop/ --user $DOCKER_REGISTRY_USERNAME --apikey $DOCKER_REGISTRY_PASSWORD
           environment:
             JFROG_CLI_OFFER_CONFIG: false
 workflows:
@@ -42,6 +42,6 @@ workflows:
           context: publish
           requires: 
             - download
-          # filters:
-          #   branches:
-          #     only: master
+          filters:
+            branches:
+              only: master
