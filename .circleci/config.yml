@@ -29,7 +29,7 @@ jobs:
           name: Publish chart
           command: |
             VAULT_HELM_VERSION=$(cat version)
-            echo $VAULT_HELM_VERSION
+            jfrog rt upload vault-helm-$VAULT_HELM_VERSION.tgz helm-local/ --url https://takescoop.jfrog.io/takescoop/ --user $DOCKER_REGISTRY_USERNAME --apikey $DOCKER_REGISTRY_PASSWORD --dry-run
       # - run:
       #   name: Install jfrog
       #   command: |
