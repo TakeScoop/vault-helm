@@ -6,10 +6,10 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Download and publish vault-helm chart
+          name: Download Vault chart
           command: |
             VAULT_HELM_VERSION=$(cat version)
-            curl -fsSL -o vault-helm-$VAULT_HELM_VERSION.tgz https://codeload.github.com/hashicorp/vault-helm/tar.gz/v$VAULT_HELM_VERSION
+            curl -fsSL -o vault-$VAULT_HELM_VERSION.tgz https://codeload.github.com/hashicorp/vault-helm/tar.gz/v$VAULT_HELM_VERSION
       - persist_to_workspace:
           root: ~/
           paths: 
@@ -29,7 +29,7 @@ jobs:
           name: Publish chart
           command: |
             VAULT_HELM_VERSION=$(cat version)
-            jfrog rt upload vault-helm-$VAULT_HELM_VERSION.tgz helm-local/ --url https://takescoop.jfrog.io/takescoop/ --user $DOCKER_REGISTRY_USERNAME --apikey $DOCKER_REGISTRY_PASSWORD
+            jfrog rt upload vault-$VAULT_HELM_VERSION.tgz helm-local/ --url https://takescoop.jfrog.io/takescoop/ --user $DOCKER_REGISTRY_USERNAME --apikey $DOCKER_REGISTRY_PASSWORD
           environment:
             JFROG_CLI_OFFER_CONFIG: false
 workflows:
